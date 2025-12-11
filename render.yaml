@@ -3,7 +3,7 @@ services:
     name: studex-backend-api
     env: node
     plan: free
-    buildCommand: pnpm install --frozen-lockfile && pnpm run start
+    buildCommand: pnpm install --frozen-lockfile && pnpm run build
     startCommand: node dist/index.js
     envVars:
       - key: NODE_ENV
