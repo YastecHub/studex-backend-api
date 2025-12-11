@@ -14,6 +14,13 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Swagger configuration
+const getServerUrl = () => {
+  if (config.nodeEnv === 'production') {
+    return 'https://studex-backend-api.onrender.com';
+  }
+  return `http://localhost:${config.port}`;
+};
+
 const swaggerOptions = {
   definition: {
     openapi: '3.0.0',
@@ -27,8 +34,8 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: `http://localhost:${config.port}`,
-        description: 'Development server',
+        url: getServerUrl(),
+        description: config.nodeEnv === 'production' ? 'Production server' : 'Development server',
       },
     ],
     components: {
