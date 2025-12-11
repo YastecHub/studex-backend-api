@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: studex-backend-api
+    env: node
+    plan: free
+    buildCommand: pnpm install && pnpm run build
+    startCommand: npm run start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: MONGODB_URI
+        scope: secret
+      - key: JWT_SECRET
+        scope: secret
+      - key: JWT_EXPIRE
+        value: 7d
+      - key: CLOUDINARY_CLOUD_NAME
+        scope: secret
+      - key: CLOUDINARY_API_KEY
+        scope: secret
+      - key: CLOUDINARY_API_SECRET
+        scope: secret
