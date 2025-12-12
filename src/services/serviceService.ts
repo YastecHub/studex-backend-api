@@ -6,9 +6,7 @@ import { uploadToCloudinary } from '../utils/cloudinary';
 export class ServiceService {
   async createService(userId: string, data: any, images?: Express.Multer.File[]): Promise<any> {
     const user = await User.findById(userId);
-    if (!user) {
-      throw new NotFoundError('User not found');
-    }
+    if (!user) throw new NotFoundError('User not found');
 
     if (user.skillCategory === 'Client') {
       throw new UnauthorizedError('Only freelancers can create services');
