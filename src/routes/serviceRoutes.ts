@@ -1,10 +1,10 @@
-import { Router } from 'express';
+import { Router, type Router as ExpressRouter } from 'express';
 import { createService, getServices, getServiceById, getUserServices } from '../controllers/serviceController';
 import { authMiddleware } from '../middleware/auth';
 import { asyncHandler } from '../middleware/asyncHandler';
 import { uploadMiddleware } from '../utils/cloudinary';
 
-const router = Router();
+const router: ExpressRouter = Router();
 
 /**
  * @swagger

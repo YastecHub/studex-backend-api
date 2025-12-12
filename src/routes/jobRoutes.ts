@@ -1,9 +1,9 @@
-import { Router } from 'express';
+import { Router, type Router as ExpressRouter } from 'express';
 import { createJob, getJobs, getUserJobs } from '../controllers/jobController';
 import { authMiddleware } from '../middleware/auth';
 import { asyncHandler } from '../middleware/asyncHandler';
 
-const router = Router();
+const router: ExpressRouter = Router();
 
 /**
  * @swagger
