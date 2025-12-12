@@ -4,6 +4,7 @@ import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUiExpress from 'swagger-ui-express';
 import { config } from './config';
 import { connectDB } from './config/database';
+import { errorHandler } from './middleware/errorHandler';
 import authRoutes from './routes/authRoutes';
 
 const app: Express = express();
@@ -86,6 +87,9 @@ app.use((req: Request, res: Response) => {
     message: 'Route not found',
   });
 });
+
+// Global error handler
+app.use(errorHandler);
 
 // Start server
 const startServer = async () => {
