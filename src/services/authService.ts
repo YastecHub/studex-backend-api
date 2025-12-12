@@ -15,6 +15,28 @@ export class AuthService {
    * Cast and validate raw request data to SignupRequestDto
    */
   private castSignupDto(data: any): SignupRequestDto {
+    // Handle interests - can come as JSON string, array, or comma-separated string
+    let interests: string[] = [];
+    
+    if (data.interests) {
+      if (typeof data.interests === 'string') {
+        // If it's a JSON string, parse it
+        if (data.interests.startsWith('[')) {
+          try {
+            interests = JSON.parse(data.interests);
+          } catch {
+            // If not valid JSON, split by comma
+            interests = data.interests.split(',').map((i: string) => i.trim()).filter((i: string) => i);
+          }
+        } else {
+          // Split by comma for comma-separated values
+          interests = data.interests.split(',').map((i: string) => i.trim()).filter((i: string) => i);
+        }
+      } else if (Array.isArray(data.interests)) {
+        interests = data.interests;
+      }
+    }
+
     return {
       matric: data.matric,
       email: data.email,
@@ -24,7 +46,7 @@ export class AuthService {
       username: data.username,
       schoolName: data.schoolName,
       skillCategory: data.skillCategory,
-      interests: Array.isArray(data.interests) ? data.interests : [],
+      interests,
     };
   }
 
