@@ -1,9 +1,0 @@
-@echo off
-echo Starting StuDex Desktop App...
-echo.
-echo Installing dependencies if needed...
-call npm install
-echo.
-echo Starting the desktop application...
-call npm run electron
-pause

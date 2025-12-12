@@ -3,9 +3,8 @@
     "development"
   ],
   "hints": {
-    "button-type": "off",
-    "axe/forms": "off",
+    "typescript-config/consistent-casing": "off",
     "axe/name-role-value": "off",
-    "typescript-config/strict": "off"
+    "axe/forms": "off"
   }
 }
