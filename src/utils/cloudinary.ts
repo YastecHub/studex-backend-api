@@ -1,5 +1,4 @@
 import { v2 as cloudinary } from 'cloudinary';
-import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import multer from 'multer';
 import { config } from '../config';
 
@@ -10,20 +9,22 @@ cloudinary.config({
   api_secret: config.cloudinary.apiSecret,
 });
 
-// Create storage for multer with Cloudinary
-const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: 'studex/profiles',
-    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
-    resource_type: 'auto',
-  } as any,
-});
+// Use memory storage for multer to buffer files in memory before uploading to Cloudinary
+const memoryStorage = multer.memoryStorage();
 
 export const uploadMiddleware = multer({
-  storage: storage,
+  storage: memoryStorage,
   limits: {
-    fileSize: 5 * 1024 * 1024,
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    // Allow only image formats
+    const allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+    if (allowedMimes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only JPEG, PNG, and WebP images are allowed'));
+    }
   },
 });
 
@@ -31,12 +32,19 @@ export const uploadToCloudinary = async (
   file: Express.Multer.File
 ): Promise<string | null> => {
   try {
+    // Check if file has buffer
+    if (!file || !file.buffer) {
+      console.warn('[Cloudinary Upload] No file or buffer provided');
+      return null;
+    }
+
     return new Promise((resolve, reject) => {
       const upload = cloudinary.uploader.upload_stream(
         {
           folder: 'studex/profiles',
           resource_type: 'auto',
-          public_id: `studex/profiles/${Date.now()}-${file.originalname}`,
+          public_id: `${Date.now()}-${file.originalname.split('.')[0]}`,
+          overwrite: false,
         },
         (error, result) => {
           if (error) {
@@ -48,10 +56,16 @@ export const uploadToCloudinary = async (
         }
       );
 
+      // Write buffer to the upload stream
+      upload.on('error', (error) => {
+        console.error('[Upload Stream Error]:', error);
+        reject(error);
+      });
+
       upload.end(file.buffer);
     });
   } catch (error) {
-    console.error('[Cloudinary Upload Error]:', error);
+    console.error('[Cloudinary Upload Exception]:', error);
     // Return null instead of throwing - allows registration to continue
     return null;
   }
