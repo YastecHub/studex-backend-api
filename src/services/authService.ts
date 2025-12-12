@@ -298,7 +298,7 @@ export class AuthService {
     const skip = (page - 1) * limit;
 
     // Build filter object
-    const filter: any = { _id: { $ne: currentUserId } }; // Exclude current user
+    const filter: any = {};
     
     if (query.skillCategory) {
       filter.skillCategory = query.skillCategory;
@@ -345,7 +345,6 @@ export class AuthService {
 
     // Build search filter
     const searchFilter = {
-      _id: { $ne: currentUserId },
       $or: [
         { firstName: { $regex: searchQuery, $options: 'i' } },
         { lastName: { $regex: searchQuery, $options: 'i' } },
