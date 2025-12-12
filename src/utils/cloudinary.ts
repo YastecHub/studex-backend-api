@@ -29,19 +29,30 @@ export const uploadMiddleware = multer({
 
 export const uploadToCloudinary = async (
   file: Express.Multer.File
-): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const upload = cloudinary.uploader.upload_stream(
-      {
-        folder: 'studex/profiles',
-        resource_type: 'auto',
-      },
-      (error, result) => {
-        if (error) reject(error);
-        resolve(result?.secure_url || '');
-      }
-    );
+): Promise<string | null> => {
+  try {
+    return new Promise((resolve, reject) => {
+      const upload = cloudinary.uploader.upload_stream(
+        {
+          folder: 'studex/profiles',
+          resource_type: 'auto',
+          public_id: `studex/profiles/${Date.now()}-${file.originalname}`,
+        },
+        (error, result) => {
+          if (error) {
+            console.error('[Cloudinary Upload Error]:', error);
+            reject(error);
+          } else {
+            resolve(result?.secure_url || null);
+          }
+        }
+      );
 
-    upload.end(file.buffer);
-  });
+      upload.end(file.buffer);
+    });
+  } catch (error) {
+    console.error('[Cloudinary Upload Error]:', error);
+    // Return null instead of throwing - allows registration to continue
+    return null;
+  }
 };

@@ -10,6 +10,7 @@ export interface IUser extends Document {
   username: string;
   schoolName: string;
   skillCategory: string;
+  interests: string[];
   profileImage?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -63,12 +64,17 @@ const userSchema = new Schema<IUser>(
     },
     skillCategory: {
       type: String,
-      required: [true, 'Please select a skill/category'],
+      required: [true, 'Please provide a skill category'],
+      enum: ['Client', 'Freelancer', 'Hybrid'],
       trim: true,
     },
     profileImage: {
       type: String,
       default: null,
+    },
+    interests: {
+      type: [String],
+      default: [],
     },
   },
   {

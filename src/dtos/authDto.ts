@@ -15,6 +15,17 @@ export interface SignupRequestDto {
   username: string;
   schoolName: string;
   skillCategory: string;
+  interests?: string[];
+  profileImageUrl?: string;
+}
+
+/**
+ * Skill categories enum
+ */
+export enum SkillCategory {
+  CLIENT = 'Client',
+  FREELANCER = 'Freelancer',
+  HYBRID = 'Hybrid',
 }
 
 /**
@@ -37,6 +48,7 @@ export interface UserDto {
   username: string;
   schoolName: string;
   skillCategory: string;
+  interests: string[];
   profileImage: string | null;
 }
 

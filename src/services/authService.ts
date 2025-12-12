@@ -8,6 +8,7 @@ import {
 } from '../utils/errors';
 import { validateSignup, validateLogin } from '../utils/validators';
 import { SignupRequestDto, LoginRequestDto, AuthResponseDto, UserDto } from '../dtos/authDto';
+import { uploadToCloudinary } from '../utils/cloudinary';
 
 export class AuthService {
   /**
@@ -23,6 +24,7 @@ export class AuthService {
       username: data.username,
       schoolName: data.schoolName,
       skillCategory: data.skillCategory,
+      interests: Array.isArray(data.interests) ? data.interests : [],
     };
   }
 
@@ -49,6 +51,7 @@ export class AuthService {
       username: user.username,
       schoolName: user.schoolName,
       skillCategory: user.skillCategory,
+      interests: user.interests || [],
       profileImage: user.profileImage || null,
     };
   }
@@ -56,7 +59,7 @@ export class AuthService {
   /**
    * Register a new user
    */
-  async signup(data: any): Promise<AuthResponseDto> {
+  async signup(data: any, profileImageFile?: Express.Multer.File): Promise<AuthResponseDto> {
     try {
       // Cast raw data to DTO
       const signupData = this.castSignupDto(data);
@@ -90,6 +93,16 @@ export class AuthService {
         throw new ConflictError('This username is already taken');
       }
 
+      // Upload profile image if provided (non-breaking if fails)
+      let profileImageUrl: string | null = null;
+      if (profileImageFile) {
+        profileImageUrl = await uploadToCloudinary(profileImageFile);
+        // Don't throw if upload fails - registration should still succeed
+        if (!profileImageUrl) {
+          console.warn('[AuthService.signup] Profile image upload failed but continuing with registration');
+        }
+      }
+
       // Create new user
       const user = new User({
         matric: signupData.matric,
@@ -100,6 +113,8 @@ export class AuthService {
         username: signupData.username,
         schoolName: signupData.schoolName,
         skillCategory: signupData.skillCategory,
+        interests: signupData.interests || [],
+        profileImage: profileImageUrl,
       });
 
       await user.save();

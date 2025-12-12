@@ -6,7 +6,8 @@ import { ValidationError, AppError } from '../utils/errors';
 
 export const signup = async (req: AuthRequest, res: Response) => {
   try {
-    const result = await authService.signup(req.body);
+    // req.file will contain the profile image if provided
+    const result = await authService.signup(req.body, req.file);
 
     const response = successResponse<AuthResponse>(
       'User registered successfully',

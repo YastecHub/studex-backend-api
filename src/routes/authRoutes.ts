@@ -2,6 +2,7 @@ import { Router, type Router as ExpressRouter } from 'express';
 import { signup, login, getProfile } from '../controllers/authController';
 import { authMiddleware } from '../middleware/auth';
 import { validateLogin, validateSignup } from '../utils/validators';
+import { uploadMiddleware } from '../utils/cloudinary';
 
 const router: ExpressRouter = Router();
 
@@ -9,12 +10,12 @@ const router: ExpressRouter = Router();
  * @swagger
  * /api/auth/signup:
  *   post:
- *     summary: Register a new user with profile information
+ *     summary: Register a new user with profile information and optional image
  *     tags: [Auth]
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
@@ -49,7 +50,21 @@ const router: ExpressRouter = Router();
  *               skillCategory:
  *                 type: string
  *                 description: Primary skill or category (Client, Freelancer, Hybrid)
+ *                 enum:
+ *                   - Client
+ *                   - Freelancer
+ *                   - Hybrid
  *                 example: "Freelancer"
+ *               interests:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Array of user interests/hobbies selected from the frontend
+ *                 example: ["Photography", "Design", "Technology"]
+ *               profileImage:
+ *                 type: string
+ *                 format: binary
+ *                 description: Profile image file (optional, non-breaking if upload fails)
  *             required:
  *               - matric
  *               - email
@@ -98,8 +113,13 @@ const router: ExpressRouter = Router();
  *                           type: string
  *                         skillCategory:
  *                           type: string
+ *                         interests:
+ *                           type: array
+ *                           items:
+ *                             type: string
  *                         profileImage:
  *                           type: string
+ *                           nullable: true
  *       400:
  *         description: Validation error
  *         content:
@@ -117,7 +137,7 @@ const router: ExpressRouter = Router();
  *       409:
  *         description: User already exists (email, matric, or username conflict)
  */
-router.post('/signup', signup);
+router.post('/signup', uploadMiddleware.single('profileImage'), signup);
 
 /**
  * @swagger
