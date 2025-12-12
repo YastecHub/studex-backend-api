@@ -5,6 +5,7 @@ import {
   UnauthorizedError,
   ConflictError,
   NotFoundError,
+  AppError,
 } from '../utils/errors';
 import { validateSignup, validateLogin } from '../utils/validators';
 import { SignupRequestDto, LoginRequestDto, AuthResponseDto, UserDto } from '../dtos/authDto';
@@ -211,6 +212,170 @@ export class AuthService {
     }
 
     return this.formatUserDto(user);
+  }
+
+  /**
+   * Update user profile
+   */
+  async updateProfile(userId: string, updateData: any): Promise<UserDto> {
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new NotFoundError('User not found');
+    }
+
+    // Validate updateable fields
+    const allowedFields = ['firstName', 'lastName', 'username', 'schoolName', 'skillCategory', 'interests'];
+    const updates: any = {};
+    
+    for (const field of allowedFields) {
+      if (updateData[field] !== undefined) {
+        updates[field] = updateData[field];
+      }
+    }
+
+    // Handle interests array
+    if (updateData.interests) {
+      if (typeof updateData.interests === 'string') {
+        try {
+          updates.interests = JSON.parse(updateData.interests);
+        } catch {
+          updates.interests = updateData.interests.split(',').map((i: string) => i.trim());
+        }
+      } else if (Array.isArray(updateData.interests)) {
+        updates.interests = updateData.interests;
+      }
+    }
+
+    // Check username uniqueness if being updated
+    if (updates.username && updates.username !== user.username) {
+      const existingUser = await User.findOne({ username: updates.username });
+      if (existingUser) {
+        throw new ConflictError('Username is already taken');
+      }
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(userId, updates, { new: true });
+    if (!updatedUser) {
+      throw new NotFoundError('User not found');
+    }
+
+    return this.formatUserDto(updatedUser);
+  }
+
+  /**
+   * Update user profile image
+   */
+  async updateProfileImage(userId: string, imageFile: Express.Multer.File): Promise<UserDto> {
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new NotFoundError('User not found');
+    }
+
+    const imageUrl = await uploadToCloudinary(imageFile);
+    if (!imageUrl) {
+      throw new AppError(500, 'Failed to upload image');
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { profileImage: imageUrl },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      throw new NotFoundError('User not found');
+    }
+
+    return this.formatUserDto(updatedUser);
+  }
+
+  /**
+   * Get users with pagination and filtering
+   */
+  async getUsers(query: any, currentUserId: string) {
+    const page = parseInt(query.page) || 1;
+    const limit = parseInt(query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    // Build filter object
+    const filter: any = { _id: { $ne: currentUserId } }; // Exclude current user
+    
+    if (query.skillCategory) {
+      filter.skillCategory = query.skillCategory;
+    }
+    
+    if (query.schoolName) {
+      filter.schoolName = { $regex: query.schoolName, $options: 'i' };
+    }
+
+    const [users, total] = await Promise.all([
+      User.find(filter)
+        .select('-password')
+        .skip(skip)
+        .limit(limit)
+        .sort({ createdAt: -1 }),
+      User.countDocuments(filter)
+    ]);
+
+    const formattedUsers = users.map(user => this.formatUserDto(user));
+
+    return {
+      users: formattedUsers,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
+      }
+    };
+  }
+
+  /**
+   * Search users by name, username, or interests
+   */
+  async searchUsers(query: any, currentUserId: string) {
+    const searchQuery = query.q;
+    if (!searchQuery) {
+      throw new ValidationError('Search query is required');
+    }
+
+    const page = parseInt(query.page) || 1;
+    const limit = parseInt(query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    // Build search filter
+    const searchFilter = {
+      _id: { $ne: currentUserId },
+      $or: [
+        { firstName: { $regex: searchQuery, $options: 'i' } },
+        { lastName: { $regex: searchQuery, $options: 'i' } },
+        { username: { $regex: searchQuery, $options: 'i' } },
+        { schoolName: { $regex: searchQuery, $options: 'i' } },
+        { interests: { $in: [new RegExp(searchQuery, 'i')] } }
+      ]
+    };
+
+    const [users, total] = await Promise.all([
+      User.find(searchFilter)
+        .select('-password')
+        .skip(skip)
+        .limit(limit)
+        .sort({ createdAt: -1 }),
+      User.countDocuments(searchFilter)
+    ]);
+
+    const formattedUsers = users.map(user => this.formatUserDto(user));
+
+    return {
+      users: formattedUsers,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
+      },
+      query: searchQuery
+    };
   }
 }
 

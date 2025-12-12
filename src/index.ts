@@ -6,6 +6,8 @@ import { config } from './config';
 import { connectDB } from './config/database';
 import { errorHandler } from './middleware/errorHandler';
 import authRoutes from './routes/authRoutes';
+import serviceRoutes from './routes/serviceRoutes';
+import jobRoutes from './routes/jobRoutes';
 
 const app: Express = express();
 
@@ -73,12 +75,16 @@ app.get('/', (req: Request, res: Response) => {
       docs: '/api-docs',
       health: '/health',
       auth: '/api/auth',
+      services: '/api/services',
+      jobs: '/api/jobs',
     },
   });
 });
 
 // API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/services', serviceRoutes);
+app.use('/api/jobs', jobRoutes);
 
 // 404 handler
 app.use((req: Request, res: Response) => {

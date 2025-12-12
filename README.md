@@ -23,14 +23,22 @@ src/
 │   ├── index.ts           # Environment variables
 │   ├── cloudinary.ts      # Cloudinary setup
 │   └── database.ts        # MongoDB connection
-├── controllers/           # Route handlers (thin layer)
-│   └── authController.ts
+├── controllers/           # Route handlers
+│   ├── authController.ts  # Auth endpoints
+│   ├── serviceController.ts # Service endpoints
+│   └── jobController.ts   # Job endpoints
 ├── models/               # Mongoose schemas
-│   └── User.ts
+│   ├── User.ts           # User model
+│   ├── Service.ts        # Service/Gig model
+│   └── Job.ts            # Job posting model
 ├── routes/               # API routes with Swagger docs
-│   └── authRoutes.ts
+│   ├── authRoutes.ts     # Auth routes
+│   ├── serviceRoutes.ts  # Service routes
+│   └── jobRoutes.ts      # Job routes
 ├── services/             # Business logic layer
-│   └── authService.ts
+│   ├── authService.ts    # Auth logic
+│   ├── serviceService.ts # Service logic
+│   └── jobService.ts     # Job logic
 ├── middleware/           # Express middleware
 │   ├── auth.ts          # JWT verification
 │   ├── errorHandler.ts  # Global error handler
@@ -39,7 +47,10 @@ src/
 │   ├── jwt.ts           # JWT token generation/verification
 │   ├── validators.ts    # Input validators
 │   ├── errors.ts        # Custom error classes
+│   ├── response.ts      # Response formatters
 │   └── cloudinary.ts    # Cloudinary utilities
+├── dtos/                # Data Transfer Objects
+│   └── authDto.ts       # Auth DTOs
 └── index.ts             # Main Express app
 ```
 
@@ -126,7 +137,29 @@ pnpm start
 
 ## 📚 API Endpoints
 
-### Authentication
+### Complete Endpoint List
+
+#### Authentication & User Management
+- **POST** `/api/auth/signup` - Register new user
+- **POST** `/api/auth/login` - User login
+- **GET** `/api/auth/profile` - Get current user profile
+- **PUT** `/api/auth/profile` - Update user profile
+- **PUT** `/api/auth/profile/image` - Update profile image
+- **GET** `/api/auth/users` - Get all users (with filters)
+- **GET** `/api/auth/users/search` - Search users
+
+#### Services (Freelancer Gigs)
+- **POST** `/api/services` - Create new service
+- **GET** `/api/services` - Get all services (with filters)
+- **GET** `/api/services/:id` - Get service by ID
+- **GET** `/api/services/my-services` - Get user's services
+
+#### Jobs (Client Postings)
+- **POST** `/api/jobs` - Post new job
+- **GET** `/api/jobs` - Get all jobs (with filters)
+- **GET** `/api/jobs/my-jobs` - Get user's posted jobs
+
+### Authentication Example
 
 #### Sign Up
 - **POST** `/api/auth/signup`
@@ -287,18 +320,27 @@ When the server is running, visit `http://localhost:3000/api-docs` to:
 - View authentication requirements
 - Understand error responses
 
+## 📖 Documentation Files
+
+- **README.md** - This file (overview)
+- **COMPLETE_API_DOCS.md** - Full API documentation with all endpoints
+- **FRONTEND_INTEGRATION_GUIDE.md** - Quick integration guide for frontend
+- **API_DOCUMENTATION.md** - Original API docs
+
 ## 🚧 Future Enhancements
 
 - [ ] Email verification
 - [ ] Password reset functionality
-- [ ] Profile image upload endpoint
-- [ ] User profile update endpoint
+- [ ] Job applications system
+- [ ] Messaging/Chat system
+- [ ] Wallet & Escrow system
+- [ ] Reviews & Ratings
+- [ ] Notifications
 - [ ] Refresh token mechanism
 - [ ] Rate limiting
 - [ ] Request logging
 - [ ] Unit tests
 - [ ] Integration tests
-- [ ] Input sanitization
 
 ## 📝 Development Guidelines
 
@@ -335,12 +377,19 @@ if (userExists) {
 }
 ```
 
-## 📞 Support
+## 📞 Support & Resources
 
-For issues or questions about the API setup, check:
-1. Swagger documentation at `/api-docs`
-2. `.env.example` for environment variables
-3. This README for architecture details
+### Documentation
+1. **Swagger UI**: `http://localhost:3000/api-docs` - Interactive API testing
+2. **Complete API Docs**: See `COMPLETE_API_DOCS.md`
+3. **Frontend Guide**: See `FRONTEND_INTEGRATION_GUIDE.md`
+4. **Health Check**: `http://localhost:3000/health`
+
+### Quick Links
+- Environment setup: `.env.example`
+- Architecture details: This README
+- Error handling: `src/utils/errors.ts`
+- Validation rules: `src/utils/validators.ts`
 
 ## 📄 License
 

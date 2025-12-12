@@ -1,0 +1,11 @@
+{
+  "extends": [
+    "development"
+  ],
+  "hints": {
+    "button-type": "off",
+    "axe/forms": "off",
+    "axe/name-role-value": "off",
+    "typescript-config/strict": "off"
+  }
+}
