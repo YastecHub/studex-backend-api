@@ -6,6 +6,10 @@ export class JobService {
   async createJob(userId: string, data: any): Promise<any> {
     const user = await User.findById(userId);
     if (!user) throw new NotFoundError('User not found');
+    
+    if (user.skillCategory === 'Freelancer') {
+      throw new UnauthorizedError('Only clients can post jobs');
+    }
 
     const job = new Job({
       clientId: userId,
